@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__.'/../bootstrap/app.php';
+require __DIR__.'/../../bootstrap/app.php';
 
 use App\Models\Interval;
 
@@ -100,5 +100,6 @@ $intervals = Interval::all();
         <script src="/assets/js/jquery-3.2.1.slim.min.js"></script>
         <script src="/assets/jspopper.min.js"></script>
         <script src="/assets/js/bootstrap.min.js"></script>
+        <script src="/assets/js/app.js"></script>
     </body>
 </html>

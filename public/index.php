@@ -1,11 +1,11 @@
 <?php
 
-require __DIR__.'/bootstrap/app.php';
+require __DIR__.'/../bootstrap/app.php';
 
 use App\Handlers\DatabaseHandler;
 
 if (!DatabaseHandler::checkConnection()) {
-    header('Location: /install');
+    echo 'Check readme for installation details.';
     die;
 }
 
