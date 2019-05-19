@@ -32,9 +32,9 @@ class DatabaseHandler
         Capsule::schema()->create('intervals', function ($table) {
             $table->increments('id');
 
-            $table->decimal('amount', 16, 4);
-            $table->date('start')->index();
-            $table->date('end')->index();
+            $table->float('price');
+            $table->date('date_start')->index();
+            $table->date('date_end')->index();
 
             $table->timestamps();
         });
