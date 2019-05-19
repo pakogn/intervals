@@ -8,7 +8,7 @@ class IntervalsManager
 {
     public function all()
     {
-        return Interval::all();
+        return Interval::orderBy('date_start')->get();
     }
 
     /**
@@ -19,7 +19,7 @@ class IntervalsManager
      */
     public function create(array $attributes = [])
     {
-
+        return Interval::create($attributes);
     }
 
     public function update($id, array $attributes = [])
