@@ -12,3 +12,4 @@ if (!DatabaseHandler::checkConnection()) {
 DatabaseHandler::installSchema();
 
 header('Location: /');
+die;
