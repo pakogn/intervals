@@ -2,9 +2,9 @@
 
 require __DIR__.'/../../bootstrap/app.php';
 
-use App\Models\Interval;
+use App\Service\Intervals\IntervalsManager;
 
-$intervals = Interval::all();
+$intervals = IntervalsManager::all();
 
 ?>
 
