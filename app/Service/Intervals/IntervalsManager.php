@@ -34,6 +34,6 @@ class IntervalsManager
 
     public function flush()
     {
-
+        return Interval::truncate();
     }
 }

@@ -7,8 +7,36 @@ use Valitron\Validator;
 
 session_start();
 
+$intervals = IntervalsManager::all();
+
+if (isset($_GET['id'])) {
+    $submitButtonText = 'Update';
+    $intervalToEdit = $intervals->where('id', $_GET['id'])->first();
+
+    if (is_null($intervalToEdit)) {
+        echo 'Resource Not Found';
+        die;
+    }
+} else {
+    $submitButtonText = 'Save';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = $_POST;
+
+    if (isset($data['_method']) && ($data['_method'] === 'DELETE')) {
+        if (!isset($_GET['id'])) {
+            echo 'Resource identifier required.';
+            die;
+        }
+
+        unset($data['_method']);
+        IntervalsManager::destroy($_GET['id']);
+        $_SESSION['status'] = 'Interval deleted successfuly.';
+
+        header('Location: /intervals');
+        die;
+    }
 
     $validator = new Validator($data);
     $validator->rule('required', ['date_start', 'date_end', 'price']);
@@ -23,11 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             IntervalsManager::create($data);
             $_SESSION['status'] = 'Interval created successfuly.';
         } else if ($data['_method'] === 'PATCH') {
+            if (!isset($_GET['id'])) {
+                echo 'Resource identifier required.';
+                die;
+            }
+
             unset($data['_method']);
             $_SESSION['status'] = 'Interval updated successfuly.';
-        } else if ($data['_method'] === 'DELETE') {
-            unset($data['_method']);
-            $_SESSION['status'] = 'Interval deleted successfuly.';
         }
 
         header('Location: /intervals');
@@ -41,9 +71,6 @@ if (isset($_SESSION['status'])) {
     $status = $_SESSION['status'];
     unset($_SESSION['status']);
 }
-
-$intervals = IntervalsManager::all();
-
 ?>
 
 <!doctype html>
@@ -67,7 +94,7 @@ $intervals = IntervalsManager::all();
             <?php if ($intervals->isNotEmpty()): ?>
                 <div class="row">
                     <div class="col-md-8 offset-md-2 mb-5">
-                        <form>
+                        <form action="/intervals/flush.php" method="POST" onsubmit="return confirm('Are you sure to flush the intervals?');">
                             <br>
                             <button class="btn btn-danger" type="submit"><i class="fa fa-sync"></i> Flush Database</button>
                         </form>
@@ -84,11 +111,16 @@ $intervals = IntervalsManager::all();
                             </button>
                         </div>
                     <?php endif?>
-                    <form action="" method="POST">
+                    <?php if (isset($intervalToEdit)): ?>
+                        <form action="/intervals/index.php?id=<?php echo $intervalToEdit->id ?>" method="POST">
+                        <input type="hidden" name="_method" value="PATCH">
+                    <?php else: ?>
+                        <form action="" method="POST">
+                    <?php endif?>
                         <div class="row">
                             <div class="col-md-4">
                                 <label for="date_start">Date Start</label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_start']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_start'] ?? null ?>" name="date_start" id="date_start" required>
+                                <input type="date" class="form-control <?php echo isset($errors['date_start']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_start'] ?? ($intervalToEdit->date_start ?? null) ?>" name="date_start" id="date_start" required>
                                 <?php if (isset($errors['date_start'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['date_start'][0] ?>
@@ -97,7 +129,7 @@ $intervals = IntervalsManager::all();
                             </div>
                             <div class="col-md-4">
                                 <label for="date_end">Date End</label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_end']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_end'] ?? null ?>" name="date_end" id="date_end" required>
+                                <input type="date" class="form-control <?php echo isset($errors['date_end']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_end'] ?? ($intervalToEdit->date_end ?? null) ?>" name="date_end" id="date_end" required>
                                 <?php if (isset($errors['date_end'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['date_end'][0] ?>
@@ -106,7 +138,7 @@ $intervals = IntervalsManager::all();
                             </div>
                             <div class="col-md-2">
                                 <label for="price">Price</label>
-                                <input type="text" class="form-control <?php echo isset($errors['price']) ? 'is-invalid' : null ?>" value="<?php echo $data['price'] ?? null ?>" name="price" id="price" required>
+                                <input type="text" class="form-control <?php echo isset($errors['price']) ? 'is-invalid' : null ?>" value="<?php echo $data['price'] ?? ($intervalToEdit->price ?? null) ?>" name="price" id="price" required>
                                 <?php if (isset($errors['price'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['price'][0] ?>
@@ -115,7 +147,8 @@ $intervals = IntervalsManager::all();
                             </div>
                             <div class="col-md-2">
                                 <br>
-                                <button class="btn btn-primary mt-2" type="submit">Save</button>
+                                <button class="btn btn-primary mt-2" type="submit"><?php echo $submitButtonText ?></button>
+                                <a href="/intervals/index.php">Cancel</a>
                             </div>
                         </div>
                     </form>
@@ -141,8 +174,9 @@ $intervals = IntervalsManager::all();
                                             <td><?php echo $interval->date_end ?></td>
                                             <td class="text-right"><?php echo $interval->price ?></td>
                                             <td>
-                                                <button class="btn btn-sm btn-primary"><i class="fa fa-edit"></i></button>
-                                                <form class="d-inline">
+                                                <a href="/intervals/index.php?id=<?php echo $interval->id ?>" class="btn btn-sm btn-primary"><i class="fa fa-edit"></i></a>
+                                                <form action="/intervals/index.php?id=<?php echo $interval->id ?>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure to delete this interval?');">
+                                                    <input type="hidden" name="_method" value="DELETE">
                                                     <button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>
                                                 </form>
                                             </td>
@@ -168,5 +202,8 @@ $intervals = IntervalsManager::all();
         <script src="/assets/js/popper.min.js"></script>
         <script src="/assets/js/bootstrap.min.js"></script>
         <script src="/assets/js/app.js"></script>
+        <script type="text/javascript">
+            Intervals.initialize();
+        </script>
     </body>
 </html>
