@@ -16,4 +16,14 @@ class Interval extends Model
         'date_start',
         'date_end',
     ];
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'date_start',
+        'date_end',
+    ];
 }

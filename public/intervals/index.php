@@ -3,6 +3,7 @@
 require __DIR__.'/../../bootstrap/app.php';
 
 use App\Service\Intervals\IntervalsManager;
+use Carbon\Carbon;
 use Valitron\Validator;
 
 session_start();
@@ -45,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $validator->rule('numeric', 'price');
     $validator->rule('date', ['date_start', 'date_end']);
     if (isset($data['date_start'])) {
-        $validator->rule('dateAfter', 'date_end', $data['date_start']);
+        $validator->rule('dateAfter', 'date_end', Carbon::parse($data['date_start'])->subDay()->toDateString());
     }
 
     // If the validator passes We need to handle the request, if not We share the errors.
@@ -117,10 +118,10 @@ if (isset($_SESSION['status'])) {
                         </div>
                     <?php endif?>
                     <?php if (isset($intervalToEdit)): ?>
-                        <form action="/intervals/index.php?id=<?php echo $intervalToEdit->id ?>" method="POST">
+                        <form action="/intervals/index.php?id=<?php echo $intervalToEdit->id ?>" method="POST" autocomplete="off">
                         <input type="hidden" name="_method" value="PATCH">
                     <?php else: ?>
-                        <form action="" method="POST">
+                        <form action="" method="POST" autocomplete="off">
                     <?php endif?>
                         <div class="row">
                             <div class="col-md-4">
@@ -175,8 +176,8 @@ if (isset($_SESSION['status'])) {
                                 <tbody>
                                     <?php foreach ($intervals as $interval): ?>
                                         <tr>
-                                            <td><?php echo $interval->date_start ?></td>
-                                            <td><?php echo $interval->date_end ?></td>
+                                            <td><?php echo $interval->date_start->toDateString() ?></td>
+                                            <td><?php echo $interval->date_end->toDateString() ?></td>
                                             <td class="text-right"><?php echo $interval->price ?></td>
                                             <td>
                                                 <a href="/intervals/index.php?id=<?php echo $interval->id ?>" class="btn btn-sm btn-primary"><i class="fa fa-edit"></i></a>
