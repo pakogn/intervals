@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         unset($data['_method']);
-        IntervalsManager::destroy($_GET['id']);
+        IntervalsManager::delete($_GET['id']);
         $_SESSION['status'] = 'Interval deleted successfuly.';
 
         header('Location: /intervals');
@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             unset($data['_method']);
+            IntervalsManager::update($_GET['id'], $data);
             $_SESSION['status'] = 'Interval updated successfuly.';
         }
 

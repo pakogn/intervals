@@ -22,14 +22,14 @@ class IntervalsManager
         return Interval::create($attributes);
     }
 
-    public function update($id, array $attributes = [])
+    public function update(string $id, array $attributes = [])
     {
-
+        return Interval::find($id)->update($attributes);
     }
 
-    public function destroy($id)
+    public function delete(string $id)
     {
-
+        return Interval::where('id', $id)->delete();
     }
 
     public function flush()
