@@ -6,6 +6,11 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DatabaseHandler
 {
+    /**
+     * Check if the database connection is fine.
+     *
+     * @return bool
+     */
     public static function checkConnection()
     {
         try
@@ -18,11 +23,21 @@ class DatabaseHandler
         return true;
     }
 
+    /**
+     * Check if We have the application schema already installed.
+     *
+     * @return bool
+     */
     public function isSchemaInstalled()
     {
         return Capsule::schema()->hasTable('intervals');
     }
 
+    /**
+     * Install the application schema.
+     *
+     * @return bool
+     */
     public static function installSchema()
     {
         if (self::isSchemaInstalled()) {

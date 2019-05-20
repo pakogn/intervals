@@ -9,6 +9,7 @@ session_start();
 
 $intervals = IntervalsManager::all();
 
+// We need to know if the given ID belongs to a resource that exists.
 if (isset($_GET['id'])) {
     $submitButtonText = 'Update';
     $intervalToEdit = $intervals->where('id', $_GET['id'])->first();
@@ -38,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die;
     }
 
+    // We need to validate the given data to have the necessary data to manage an interval.
     $validator = new Validator($data);
     $validator->rule('required', ['date_start', 'date_end', 'price']);
     $validator->rule('numeric', 'price');
@@ -46,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $validator->rule('dateAfter', 'date_end', $data['date_start']);
     }
 
+    // If the validator passes We need to handle the request, if not We share the errors.
     if ($validator->validate()) {
         if (!isset($data['_method'])) {
             IntervalsManager::create($data);
@@ -68,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// If We have flashed status to the session We need to manage it.
 if (isset($_SESSION['status'])) {
     $status = $_SESSION['status'];
     unset($_SESSION['status']);
@@ -163,9 +167,9 @@ if (isset($_SESSION['status'])) {
                         <div class="table-responsive">
                             <table class="table table-striped table-hover table-bordered">
                                 <thead>
-                                    <th>Start</th>
-                                    <th>End</th>
-                                    <th>Amount</th>
+                                    <th>Date Start</th>
+                                    <th>Date End</th>
+                                    <th>Price</th>
                                     <th>Actions</th>
                                 </thead>
                                 <tbody>
