@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die;
         }
 
-        unset($data['_method']);
         IntervalsManager::delete($_GET['id']);
         $_SESSION['status'] = 'Interval deleted successfuly.';
 
@@ -47,6 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $validator->rule('date', ['date_start', 'date_end']);
     if (isset($data['date_start'])) {
         $validator->rule('dateAfter', 'date_end', Carbon::parse($data['date_start'])->subDay()->toDateString());
+    }
+    // If we are going to edit, We need to be sure that the user choosed a valid date.
+    if (isset($_GET['id'])) {
+        $validator->rule('dateAfter', 'date_start', $intervalToEdit->date_start->copy()->subDay());
+        $validator->rule('dateBefore', 'date_end', $intervalToEdit->date_end->copy()->addDay());
     }
 
     // If the validator passes We need to handle the request, if not We share the errors.
@@ -84,8 +88,10 @@ if (isset($_SESSION['status'])) {
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="A simple solution for managing intervals.">
+        <meta name="author" content="Francisco Daniel">
 
-        <title>Intervals manager</title>
+        <title>Intervals Manager</title>
 
         <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
@@ -100,7 +106,7 @@ if (isset($_SESSION['status'])) {
             <?php if ($intervals->isNotEmpty()): ?>
                 <div class="row">
                     <div class="col-md-8 offset-md-2 mb-5">
-                        <form action="/intervals/flush.php" method="POST" onsubmit="return confirm('Are you sure to flush the intervals?');">
+                        <form action="/intervals/flush.php" method="POST" onsubmit="return confirm('Are you sure you want to flush the intervals?');">
                             <br>
                             <button class="btn btn-danger" type="submit"><i class="fa fa-sync"></i> Flush Database</button>
                         </form>
@@ -126,7 +132,14 @@ if (isset($_SESSION['status'])) {
                         <div class="row">
                             <div class="col-md-4">
                                 <label for="date_start">Date Start</label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_start']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_start'] ?? ($intervalToEdit->date_start ?? null) ?>" name="date_start" id="date_start" required>
+                                <input min="<?php echo isset($intervalToEdit) ? $intervalToEdit->date_start->toDateString() : null ?>"
+                                       max="<?php echo isset($intervalToEdit) ? $intervalToEdit->date_end->toDateString() : null ?>"
+                                       type="date"
+                                       class="form-control <?php echo isset($errors['date_start']) ? 'is-invalid' : null ?>"
+                                       value="<?php echo $data['date_start'] ?? (isset($intervalToEdit) ? $intervalToEdit->date_start->toDateString() : null) ?>"
+                                       name="date_start"
+                                       id="date_start"
+                                       required>
                                 <?php if (isset($errors['date_start'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['date_start'][0] ?>
@@ -135,7 +148,14 @@ if (isset($_SESSION['status'])) {
                             </div>
                             <div class="col-md-4">
                                 <label for="date_end">Date End</label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_end']) ? 'is-invalid' : null ?>" value="<?php echo $data['date_end'] ?? ($intervalToEdit->date_end ?? null) ?>" name="date_end" id="date_end" required>
+                                <input min="<?php echo isset($intervalToEdit) ? $intervalToEdit->date_start->toDateString() : null ?>"
+                                       max="<?php echo isset($intervalToEdit) ? $intervalToEdit->date_end->toDateString() : null ?>"
+                                       type="date"
+                                       class="form-control <?php echo isset($errors['date_end']) ? 'is-invalid' : null ?>"
+                                       value="<?php echo $data['date_end'] ?? (isset($intervalToEdit) ? $intervalToEdit->date_end->toDateString() : null) ?>"
+                                       name="date_end"
+                                       id="date_end"
+                                       required>
                                 <?php if (isset($errors['date_end'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['date_end'][0] ?>
@@ -144,7 +164,12 @@ if (isset($_SESSION['status'])) {
                             </div>
                             <div class="col-md-2">
                                 <label for="price">Price</label>
-                                <input type="text" class="form-control <?php echo isset($errors['price']) ? 'is-invalid' : null ?>" value="<?php echo $data['price'] ?? ($intervalToEdit->price ?? null) ?>" name="price" id="price" required>
+                                <input type="text"
+                                       class="form-control <?php echo isset($errors['price']) ? 'is-invalid' : null ?>"
+                                       value="<?php echo $data['price'] ?? ($intervalToEdit->price ?? null) ?>"
+                                       name="price"
+                                       id="price"
+                                       required>
                                 <?php if (isset($errors['price'])): ?>
                                     <div class="invalid-feedback">
                                         <?php echo $errors['price'][0] ?>
